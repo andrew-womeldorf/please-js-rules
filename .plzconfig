@@ -1,0 +1,5 @@
+[please]
+version = >=16.19.0
+
+[PluginDefinition]
+name = please_js
