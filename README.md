@@ -29,6 +29,22 @@ plugin_repo(
 )
 ```
 
+Use it in a `BUILD` file:
+
+```python
+# some_dir/BUILD
+subinclude("///please-js//build_defs:js")
+
+yarn_library(
+    name = "@types--node",
+    package_name = "node",
+    scope = "@types",
+    version = "17.0.23",
+)
+```
+
+**It's recommended to install packages with yarn, then use the //build_defs:yarn_to_please script to generate the BUILD file.**
+
 ## Configuration
 
 This plugin can be configured via the plugins section as follows:
