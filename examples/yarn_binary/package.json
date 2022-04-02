@@ -1,0 +1,10 @@
+{
+  "resolutions": {
+    "@types/node": "17.0.23",
+    "debug": "4.3.4",
+    "ms": "2.1.2"
+  },
+  "dependencies": {
+    "@redocly/openapi-cli": "^1.0.0-beta.91"
+  }
+}
