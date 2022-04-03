@@ -12,9 +12,7 @@ Pleasings repo:
 
 - Scoped packages
 - Generating the deps to support scoped packages
-- Merging together BUILD files
 - Generating targets for scripts in packages
-- NPM has come a long way since the yarn rules were created, I think
 
 ## Basic Usage
 
@@ -43,7 +41,10 @@ yarn_library(
 )
 ```
 
-**It's recommended to install packages with yarn, then use the //build_defs:yarn_to_please script to generate the BUILD file.**
+**It's recommended to install packages with `yarn add --flat`, then use the
+//build_defs:yarn_to_please script to generate the BUILD file.** Always use the
+`--flat` option when adding packages with yarn, so that there's only one
+version of a package.
 
 ## Configuration
 
