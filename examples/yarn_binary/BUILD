@@ -720,8 +720,8 @@ yarn_library(
     version = "20.2.9",
 )
 
-yarn_binary(
-    name = "openapi-cli",
+yarn_binary_old(
+    name = "openapi-cli-old",
     bin_name = "openapi",
     package = ":@redocly--openapi-cli",
     deps = [
@@ -813,4 +813,10 @@ yarn_binary(
         ":yargs",
         ":yargs-parser",
     ],
+)
+
+yarn_binary(
+    name = "openapi-cli",
+    bin_name = "openapi",
+    package = ":@redocly--openapi-cli",
 )
