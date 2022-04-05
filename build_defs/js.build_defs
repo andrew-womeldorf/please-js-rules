@@ -50,13 +50,12 @@ def yarn_library(name: str, version: str, scope: str=None, package_name=None, ou
         labels = ['yarn:%s@%s' % (package_name, version)],
     )
 
-def yarn_binary(name:str, package:str, deps:list=[], bin_name:str=None, visibility:list=None, labels:list=None):
+def yarn_binary(name:str, package:str, bin_name:str=None, visibility:list=None, labels:list=None):
     """Create a binary executable from an yarn bundle.
 
     Args:
         name (str): Name of the target.
         package (str): a yarn_library that contain the node script that we are going to use
-        deps (list): list of yarn dependencies that will be copied in node_modules dir of the package
         bin_name (str): Name of the script found in the bin section of package.json. Defaults to name.
         labels (list): a list of labels that will be used to mark the returning targets
         visibility (list): Visibility declaration for this rule.
@@ -64,20 +63,32 @@ def yarn_binary(name:str, package:str, deps:list=[], bin_name:str=None, visibili
     """
 
     bin_name = bin_name or name
+    package_fqn = package if package.startswith("//") else f"//$PKG_DIR{package}"
 
-    deps_dict = {}
-    for d in deps:
-        deps_dict[d] = d[1:].replace("--", "/")
+    cmd = [
+        'mkdir -p $OUT',
+        f'cp -Rf $(location {package})/* $OUT',
+        f"DEPS=$(plz query deps {package_fqn} | tail -n +2)", # tail drops self from list
+    ]
+
+    # list all dependencies of the rule. by using plz query deps, this lists
+    # all nested deps as well.
+    # There's some translation of packages that are scoped, because build
+    # targets can't have `/`, they were replaced with `--`.
+    cmd += [' '.join([
+        "for dep in $DEPS; do",
+        "d=$(echo $dep | cut -d ':' -f 2);",
+        "dSlash=$(echo $d | sed 's/--/\//');",
+        "mkdir -p $OUT/node_modules/$dSlash;",
+        "cp -rf $(location $d)/* $OUT/node_modules/$dSlash;",
+        "done",
+    ])]
 
     bundle = genrule(
         name = '_'+name+'#bundle',
         srcs = [package],
-        deps = deps,
-
-        cmd = [
-                  'mkdir -p $OUT',
-                  f'cp -Rf $(location {package})/* $OUT',
-                  ]+[f'mkdir -p $OUT/node_modules/{dr} && cp -rf $(location {d})/* $OUT/node_modules/{dr}' for d, dr in deps_dict.items()],
+        deps = [package],
+        cmd = cmd,
         outs = [name]
     )
 
@@ -97,6 +108,7 @@ def yarn_binary(name:str, package:str, deps:list=[], bin_name:str=None, visibili
         visibility = visibility,
         labels = labels ,
     )
+
 
 # Set these so others can override them using package()
 CONFIG.setdefault('NODE_TOOL', 'node')
