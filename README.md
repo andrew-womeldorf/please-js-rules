@@ -21,8 +21,9 @@ Include this plugin in your project:
 ```python
 # BUILD
 plugin_repo(
-    name = "please-js",
+    name = "js",
     owner = "andrew-womeldorf",
+    plugin = "please-js-rules",
     revision = "<Some git tag, commit, or other reference>",
 )
 ```

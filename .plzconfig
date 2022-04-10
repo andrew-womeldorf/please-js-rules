@@ -1,5 +1,5 @@
 [please]
-version = >=16.19.0
+version = 16.20.0-beta.14
 
 [PluginDefinition]
-name = please_js
+name = js

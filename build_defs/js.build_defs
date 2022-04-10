@@ -1,5 +1,5 @@
 def yarn_library(name: str, version: str, scope: str=None, package_name=None, out=None, hashes=None, test_only=False, patches=None,
-                 visibility=None, deps=None, _tag=''):
+                 visibility=None, deps=None):
     """Install a third-party library from the yarn registry.
 
     The typical workflow for this is to use yarn to set up your package.json and package-lock.json,
@@ -37,7 +37,6 @@ def yarn_library(name: str, version: str, scope: str=None, package_name=None, ou
 
     return build_rule(
         name = name,
-        tag = _tag,
         cmd = ' && '.join(cmd),
         srcs = patches,
         outs = [out or name],
@@ -63,24 +62,19 @@ def yarn_binary(name:str, package:str, bin_name:str=None, visibility:list=None, 
     """
 
     bin_name = bin_name or name
-    package_fqn = package if package.startswith("//") else f"//$PKG_DIR{package}"
+    d = f"$(dir {package})"
 
     cmd = [
         'mkdir -p $OUT',
         f'cp -Rf $(location {package})/* $OUT',
-        f"DEPS=$(plz query deps {package_fqn} | tail -n +2)", # tail drops self from list
+        f"DEPS=$(ls -1 {d} | grep -v $NAME)",
     ]
 
-    # list all dependencies of the rule. by using plz query deps, this lists
-    # all nested deps as well.
-    # There's some translation of packages that are scoped, because build
-    # targets can't have `/`, they were replaced with `--`.
     cmd += [' '.join([
         "for dep in $DEPS; do",
-        "d=$(echo $dep | cut -d ':' -f 2);",
-        "dSlash=$(echo $d | sed 's/--/\//');",
+        "dSlash=$(echo $dep | sed 's/--/\//');",
         "mkdir -p $OUT/node_modules/$dSlash;",
-        "cp -rf $(location $d)/* $OUT/node_modules/$dSlash;",
+        f"cp -rf {d}/$dep/* $OUT/node_modules/$dSlash;",
         "done",
     ])]
 
